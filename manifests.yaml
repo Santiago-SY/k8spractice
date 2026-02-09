@@ -1,0 +1,43 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: healthapp
+  labels:
+    app: healthapp
+spec:
+  containers:
+  - name: healthapp
+    image: goapp:latest
+    imagePullPolicy: IfNotPresent
+    ports:
+      - containerPort: 8080
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: healthapp-service
+spec:
+  selector:
+    app: healthapp
+  ports:
+    - port: 8080
+---
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: healthapp-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: healthapp.local
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: healthapp-service
+            port:
+              number: 8080
